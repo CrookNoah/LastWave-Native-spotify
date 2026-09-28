@@ -437,7 +437,7 @@ class NativeAudioEngine @Inject constructor(
         const val CLARITY_TRIM_MAX_DB = 12f
 
         val libraryLoaded = try {
-            // System.loadLibrary("lastwave_audio")
+            System.loadLibrary("lastwave_audio")
             true
         } catch (error: LinkageError) {
             Log.e(TAG, "Could not load native audio library", error)

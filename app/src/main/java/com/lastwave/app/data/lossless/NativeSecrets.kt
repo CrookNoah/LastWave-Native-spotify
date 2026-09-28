@@ -23,16 +23,23 @@ class NativeSecrets @Inject constructor(
      * Returns Pair(timestamp, signatureHex) or null if signature/environment check failed.
      */
     fun signAddonRequest(url: String, method: String): Pair<String, String>? {
-        val res = nativeSignAddonRequest(context, url, method)
-        if (res.isNullOrBlank() || !res.contains("|")) return null
-        val parts = res.split("|", limit = 2)
-        if (parts.size != 2 || parts[0].isBlank() || parts[1].isBlank()) return null
-        return Pair(parts[0], parts[1])
+        return try {
+            val res = nativeSignAddonRequest(context, url, method)
+            if (res.isNullOrBlank() || !res.contains("|")) return null
+            val parts = res.split("|", limit = 2)
+            if (parts.size != 2 || parts[0].isBlank() || parts[1].isBlank()) return null
+            Pair(parts[0], parts[1])
+        } catch (t: Throwable) {
+            null
+        }
     }
 
     companion object {
         init {
-            // System.loadLibrary("lastwave_audio")
+            try {
+                System.loadLibrary("lastwave_audio")
+            } catch (_: Throwable) {
+            }
         }
 
         @JvmStatic
