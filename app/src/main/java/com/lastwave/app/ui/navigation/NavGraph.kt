@@ -394,6 +394,7 @@ fun LastWaveNavHost(
                         navController.navigate(Screen.Login.route) {
                             popUpTo(Screen.MainShell.route) { inclusive = true }
                         }
+                    },
                     onOpenDownloads = { navController.navigate(Screen.Downloads.route) },
                     onOpenModules = { navController.navigate(Screen.ProviderModules.route) },
                     onOpenHomeSections = { navController.navigate(Screen.HomeSections.route) },
