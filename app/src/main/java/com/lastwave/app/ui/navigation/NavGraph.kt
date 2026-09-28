@@ -401,6 +401,7 @@ fun LastWaveNavHost(
                     onOpenYouTubeImport = { navController.navigate(Screen.YouTubeImport.route) },
                     onOpenYouTubeLogin = { navController.navigate(Screen.YouTubeLogin.route) },
                     onOpenExternalImport = { navController.navigate(Screen.ExternalPlaylistImport.route) },
+                    onOpenSpotifyImport = { navController.navigate(Screen.SpotifyImport.route) { launchSingleTop = true } },
                 )
             }
         }
@@ -421,6 +422,14 @@ fun LastWaveNavHost(
                 com.lastwave.app.ui.settings.YouTubeLoginScreen(
                     onBack = { navController.popBackStack() },
                     onConnected = { navController.popBackStack() },
+                )
+            }
+        }
+
+        composable(Screen.SpotifyImport.route) {
+            PredictiveBackScreen(onBack = { navController.popBackStack() }) {
+                com.lastwave.app.ui.settings.SpotifyImportScreen(
+                    onBack = { navController.popBackStack() },
                 )
             }
         }

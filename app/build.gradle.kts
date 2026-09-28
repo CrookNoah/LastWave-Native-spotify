@@ -67,6 +67,10 @@ android {
         // SecretsBridge_generated.h (tools/generate_native_secrets.py).
         // No secret fields are exposed in DEX / BuildConfig.
 
+        // Optional default Spotify client ID for the account importer. A
+        // client ID is public (PKCE, no secret); users can also enter their own.
+        buildConfigField("String", "SPOTIFY_CLIENT_ID", "\"${resolveSecret("SPOTIFY_CLIENT_ID")}\"")
+
         externalNativeBuild {
             cmake {
                 arguments += listOf(

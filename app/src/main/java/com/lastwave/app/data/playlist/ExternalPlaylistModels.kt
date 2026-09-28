@@ -7,7 +7,8 @@ import com.lastwave.app.data.generate.GeneratedTrack
  *
  * These are **public** playlist sources: the track list is read from the
  * provider's public web page, so no API key, OAuth or account is required.
- * Private playlists / "Liked Songs" would need OAuth and are not supported.
+ * Private playlists and Spotify "Liked Songs" need a sign-in; see
+ * [com.lastwave.app.data.spotify.SpotifyLibraryImporter].
  */
 enum class ExternalPlaylistSource(
     val label: String,

@@ -896,6 +896,23 @@ object SettingsSearchIndex {
             )
             add(
                 SettingsEntry(
+                    id = "library.import_spotify_account",
+                    title = "Import your Spotify library",
+                    subtitle = "Sign in to Spotify to import Liked Songs, private playlists and saved albums",
+                    keywords = listOf(
+                        "spotify liked songs", "spotify login", "spotify account", "import liked songs",
+                        "spotify library", "saved albums", "private playlists", "transfer from spotify"
+                    ),
+                    icon = Icons.Filled.QueueMusic,
+                    iconContainer = { MaterialTheme.colorScheme.primaryContainer },
+                    iconTint = { MaterialTheme.colorScheme.onPrimaryContainer },
+                    parentTab = SettingsTab.LIBRARY,
+                    section = "Imports & Addons",
+                    type = EntryType.ACTION,
+                )
+            )
+            add(
+                SettingsEntry(
                     id = "library.import_external",
                     title = "Import from Spotify / Apple Music",
                     subtitle = "Paste a public playlist URL from Spotify or Apple Music to transfer tracks",

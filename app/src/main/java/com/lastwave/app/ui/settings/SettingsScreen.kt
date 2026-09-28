@@ -417,6 +417,7 @@ fun SettingsScreen(
     onOpenYouTubeImport: () -> Unit = {},
     onOpenYouTubeLogin: () -> Unit = {},
     onOpenExternalImport: () -> Unit = {},
+    onOpenSpotifyImport: () -> Unit = {},
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val session by viewModel.session.collectAsStateWithLifecycle()
@@ -1489,7 +1490,7 @@ fun SettingsScreen(
                         item {
                             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                                 SectionLabel(stringResource(R.string.settings_section_imports))
-                                SettingsGroup(rowCount = 3) { index, position ->
+                                SettingsGroup(rowCount = 4) { index, position ->
                                     when (index) {
                                         0 -> SettingsActionCard(
                                             icon = Icons.Filled.QueueMusic,
@@ -1502,6 +1503,16 @@ fun SettingsScreen(
                                             isHighlighted = (highlightedSettingId == "library.import_yt"),
                                         )
                                         1 -> SettingsActionCard(
+                                            icon = Icons.Filled.QueueMusic,
+                                            iconContainer = MaterialTheme.colorScheme.primaryContainer,
+                                            iconTint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                            title = "Import your Spotify library",
+                                            subtitle = "Sign in to bring over Liked Songs, playlists & albums",
+                                            onClick = onOpenSpotifyImport,
+                                            position = position,
+                                            isHighlighted = (highlightedSettingId == "library.import_spotify_account"),
+                                        )
+                                        2 -> SettingsActionCard(
                                             icon = Icons.Filled.QueueMusic,
                                             iconContainer = MaterialTheme.colorScheme.secondaryContainer,
                                             iconTint = MaterialTheme.colorScheme.onSecondaryContainer,

@@ -39,7 +39,10 @@ class MainActivity : androidx.fragment.app.FragmentActivity() {
     lateinit var lastFmAuthCallback: LastFmAuthCallbackCoordinator
 
     @Inject
-    lateinit var linkPlaybackResolver: dagger.Lazy<com.lastwave.app.playback.LinkPlaybackResolver>
+    lateinit var spotifyAuth: dagger.Lazy<com.lastwave.app.data.spotify.SpotifyAuthManager>
+
+    @Inject
+    lateinit var linkPlaybackResolver:dagger.Lazy<com.lastwave.app.playback.LinkPlaybackResolver>
 
     @Inject
     lateinit var appRouteNavigator: dagger.Lazy<com.lastwave.app.ui.navigation.AppRouteNavigator>
@@ -87,6 +90,7 @@ class MainActivity : androidx.fragment.app.FragmentActivity() {
         }
         runCatching { lastFmAuthCallback.capture(intent) }
             .onFailure { android.util.Log.e(STARTUP_TAG, "Auth callback ignored during startup", it) }
+        captureSpotifyCallback(intent)
         handlePlaybackIntent(intent)
         handleNavigationIntent(intent)
         runCatching {
@@ -242,8 +246,20 @@ class MainActivity : androidx.fragment.app.FragmentActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
         runCatching { lastFmAuthCallback.capture(intent) }
+        captureSpotifyCallback(intent)
         handlePlaybackIntent(intent)
         handleNavigationIntent(intent)
+    }
+
+    /** Hands `lastwave://spotify-callback` to the importer and opens its screen. */
+    private fun captureSpotifyCallback(intent: Intent?) {
+        val isSpotifyCallback = intent?.data?.let { it.scheme == "lastwave" && it.host == "spotify-callback" } == true
+        if (!isSpotifyCallback) return
+        runCatching {
+            if (spotifyAuth.get().capture(intent)) {
+                appRouteNavigator.get().navigateTo(Screen.SpotifyImport.route)
+            }
+        }.onFailure { android.util.Log.e(STARTUP_TAG, "Spotify callback ignored", it) }
     }
 
     private companion object {

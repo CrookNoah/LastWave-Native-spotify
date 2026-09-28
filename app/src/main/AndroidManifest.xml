@@ -120,6 +120,14 @@
                 <data android:scheme="lastwave" android:host="auth-callback" />
             </intent-filter>
 
+            <!-- Spotify sign-in (PKCE) redirect for the account importer -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="lastwave" android:host="spotify-callback" />
+            </intent-filter>
+
             <!-- YouTube & YouTube Music deep links / Open With -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />

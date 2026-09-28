@@ -52,50 +52,7 @@ class CsvPlaylistImporter @Inject constructor(
             rawTracks.map { raw ->
                 async {
                     limiter.withPermit {
-                        try {
-                            if (raw.videoId != null) {
-                                val details = runCatching { innerTube.fetchSongDetails(raw.videoId) }.getOrNull()
-                                GeneratedTrack(
-                                    name = raw.title.ifBlank { details?.title ?: "Track" },
-                                    artist = raw.artist.ifBlank { details?.artist ?: "Unknown artist" },
-                                    album = raw.album ?: details?.album,
-                                    artworkUrl = details?.artworkUrl ?: "https://i.ytimg.com/vi/${raw.videoId}/hqdefault.jpg",
-                                    url = "https://music.youtube.com/watch?v=${raw.videoId}",
-                                )
-                            } else if (raw.title.isNotBlank()) {
-                                val cleanArtist = raw.artist.takeUnless { it.equals("Unknown artist", ignoreCase = true) }.orEmpty()
-                                val query = if (cleanArtist.isNotBlank()) "${raw.title} $cleanArtist" else raw.title
-                                val candidates = runCatching {
-                                    innerTube.searchSongs(
-                                        query = query,
-                                        limit = 30,
-                                        prefetchStreams = false,
-                                    )
-                                }.getOrDefault(emptyList())
-
-                                val exactMatch = candidates.firstOrNull { isExactMatch(raw, it) }
-                                    ?: (if (raw.album != null) candidates.firstOrNull { isExactMatch(raw.copy(album = null), it) } else null)
-
-                                val bestMatch = exactMatch
-                                    ?: (if (cleanArtist.isNotBlank()) innerTube.findBestMatchOrNull(raw.title, cleanArtist, prefetchStreams = false) else null)
-                                    ?: (if (cleanArtist.isNotBlank()) innerTube.findBestMatchOrNull(cleanArtist, raw.title, prefetchStreams = false) else null)
-                                    ?: innerTube.findBestMatchOrNull(raw.title, "", prefetchStreams = false)
-
-                                bestMatch?.let {
-                                    GeneratedTrack(
-                                        name = raw.title.ifBlank { it.title },
-                                        artist = cleanArtist.ifBlank { it.artist },
-                                        album = raw.album ?: it.album,
-                                        artworkUrl = it.artworkUrl,
-                                        url = "https://music.youtube.com/watch?v=${it.videoId}",
-                                    )
-                                }
-                            } else null
-                        } catch (error: CancellationException) {
-                            throw error
-                        } catch (_: Exception) {
-                            null
-                        }
+                        matchTrack(raw)
                     }
                 }
             }.awaitAll().filterNotNull()
@@ -106,6 +63,56 @@ class CsvPlaylistImporter @Inject constructor(
             matchedCount = tracks.size,
             tracks = tracks,
         )
+    }
+
+    /**
+     * Resolves one source row to a playable YouTube Music track, or null when
+     * no candidate passes verification. Shared with the Spotify account import
+     * so every importer applies the same strict title/artist/album checks.
+     */
+    suspend fun matchTrack(raw: CsvRawTrack): GeneratedTrack? = try {
+        if (raw.videoId != null) {
+            val details = runCatching { innerTube.fetchSongDetails(raw.videoId) }.getOrNull()
+            GeneratedTrack(
+                name = raw.title.ifBlank { details?.title ?: "Track" },
+                artist = raw.artist.ifBlank { details?.artist ?: "Unknown artist" },
+                album = raw.album ?: details?.album,
+                artworkUrl = details?.artworkUrl ?: "https://i.ytimg.com/vi/${raw.videoId}/hqdefault.jpg",
+                url = "https://music.youtube.com/watch?v=${raw.videoId}",
+            )
+        } else if (raw.title.isNotBlank()) {
+            val cleanArtist = raw.artist.takeUnless { it.equals("Unknown artist", ignoreCase = true) }.orEmpty()
+            val query = if (cleanArtist.isNotBlank()) "${raw.title} $cleanArtist" else raw.title
+            val candidates = runCatching {
+                innerTube.searchSongs(
+                    query = query,
+                    limit = 30,
+                    prefetchStreams = false,
+                )
+            }.getOrDefault(emptyList())
+
+            val exactMatch = candidates.firstOrNull { isExactMatch(raw, it) }
+                ?: (if (raw.album != null) candidates.firstOrNull { isExactMatch(raw.copy(album = null), it) } else null)
+
+            val bestMatch = exactMatch
+                ?: (if (cleanArtist.isNotBlank()) innerTube.findBestMatchOrNull(raw.title, cleanArtist, prefetchStreams = false) else null)
+                ?: (if (cleanArtist.isNotBlank()) innerTube.findBestMatchOrNull(cleanArtist, raw.title, prefetchStreams = false) else null)
+                ?: innerTube.findBestMatchOrNull(raw.title, "", prefetchStreams = false)
+
+            bestMatch?.let {
+                GeneratedTrack(
+                    name = raw.title.ifBlank { it.title },
+                    artist = cleanArtist.ifBlank { it.artist },
+                    album = raw.album ?: it.album,
+                    artworkUrl = it.artworkUrl,
+                    url = "https://music.youtube.com/watch?v=${it.videoId}",
+                )
+            }
+        } else null
+    } catch (error: CancellationException) {
+        throw error
+    } catch (_: Exception) {
+        null
     }
 
     internal fun isExactMatch(source: CsvRawTrack, target: YouTubeMusicTrack): Boolean {

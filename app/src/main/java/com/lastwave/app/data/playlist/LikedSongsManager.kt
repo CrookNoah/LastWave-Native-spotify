@@ -80,6 +80,25 @@ class LikedSongsManager @Inject constructor(
         true
     }
 
+    /**
+     * Bulk-likes [tracks] (e.g. an imported Liked Songs library) in order,
+     * skipping ones already liked. Returns how many were newly added.
+     */
+    suspend fun addAll(tracks: List<GeneratedTrack>): Int = mutationMutex.withLock {
+        repeat(3) {
+            val playlist = playlistRepository.getLikedSongs() ?: playlistRepository.ensureLikedSongs()
+            val known = playlist.tracks.mapTo(mutableSetOf()) { it.key }
+            val added = tracks.filter { known.add(it.key) }
+            if (added.isEmpty()) return@withLock 0
+            // Null means a concurrent write changed the row; re-read and retry.
+            if (playlistRepository.replaceTracksForSync(playlist.id, playlist.tracks + added) != null) {
+                refresh()
+                return@withLock added.size
+            }
+        }
+        throw IllegalStateException("Liked Songs changed during import. Try again.")
+    }
+
     private suspend fun refresh() {
         _likedTrackKeys.value = playlistRepository.getLikedSongs()
             ?.tracks

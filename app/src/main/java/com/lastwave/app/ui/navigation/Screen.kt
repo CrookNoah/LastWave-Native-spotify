@@ -29,6 +29,7 @@ sealed class Screen(val route: String) {
     data object YouTubeImport : Screen("youtube_import")
     data object YouTubeLogin : Screen("youtube_login")
     data object ExternalPlaylistImport : Screen("external_playlist_import")
+    data object SpotifyImport : Screen("spotify_import")
     data object NewReleases : Screen("new_releases")
     data object FeedPlaylistDetail : Screen("feed_playlist/{playlistId}") {
         fun createRoute(playlistId: String) = "feed_playlist/${encodeArg(playlistId)}"
